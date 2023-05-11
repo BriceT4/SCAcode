@@ -6,4 +6,3 @@ The fundamental principles of this work can largely be found in: Nuclear Systems
 ## Useage
 python SCAcode_Setup.py -i &lt;dirToInp&gt;\&lt;input_file&gt;.py  
   
-Dont' run less than ~ 400 CVs or you will create too coarse of a mesh and it will crash. 
