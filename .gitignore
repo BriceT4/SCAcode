@@ -1,0 +1,13 @@
+
+*.pyc
+*.synctex
+*.synctex.gz
+*__pycache__
+*.asv
+
+# matlab
+*.m~
+*.mex*
+slprj/
+octave-workspace
+.autosave

@@ -1,0 +1,17 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "SCAcode_Setup.py",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/SCAcode_Setup.py",
+            "console": "integratedTerminal",
+            "args": ["-i", "inputs.inp_Benchmark_1_PWR_SCB_True.py"], 
+            "justMyCode": true
+        }
+    ]
+}
