@@ -29,7 +29,7 @@ def SetupCommandLine():
     parser.add_argument('-i', '--INPUT', nargs='?', dest='infile',
                         metavar='input_file', required=True,
                         help='Input file name. REQUIRED. Must be .py.\n'
-                            'Usage: -i/--INPUT <filename>')
+                            'Usage: -i/--INPUT <filename>.py')
     args = parser.parse_args()
 
     # Get the file path and the file name without the extension
