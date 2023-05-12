@@ -6,7 +6,6 @@
 import numpy as np
 import os
 import pandas as pd
-import scipy
 import scipy.interpolate
 import time
 
@@ -40,7 +39,6 @@ def solver(inp, infile_name):
             interp_fns = {prop: scipy.interpolate.interp1d([lower_row[YourProp],upper_row[YourProp]],
                                                            [lower_row[prop], upper_row[prop]]) for prop in proptable.columns}
             InterpValues = pd.DataFrame({prop: fn(YourValue) for prop, fn in interp_fns.items()}, index=[0])
-
         # Calculate densities
         rhos = pd.DataFrame({'rho_l (kg/m^3)': 1/InterpValues['vol_l (m^3/kg)'],
                             'rho_g (kg/m^3)': 1/InterpValues['vol_g (m^3/kg)']})
@@ -122,8 +120,7 @@ def solver(inp, infile_name):
             T_m = T_sat
         props_Tmz_in = interpPropTable('T (C)', T_m)
         
-        # if h_iplus1 is False, it hasn't been calculated yet, so calculate 
-        # h_iplus1, for the first time (this will only happen once)
+        # calculate h_iplus1, for the first time (this will only happen once)
         if h_iplus1 == False:
             h_i_in = (props_Tmz_in.loc[:, 'h_l (J/kg)']).values[0]
             # using .values[0] keeps the index of the value out of our new variable.
@@ -151,26 +148,25 @@ def solver(inp, infile_name):
 
         #define properties from props_=_Tmz_out that we need.
         # rho_in = props_Tmz_in.loc[0, 'rho_l (kg/m^3)']
-        dat_Tmz_out = props_Tmz_out.loc[0]
+        props_Tmz_out_0 = props_Tmz_out.loc[0]
 
-        rho_l = dat_Tmz_out['rho_l (kg/m^3)']
+        rho_l = props_Tmz_out_0['rho_l (kg/m^3)']
         rho_out = rho_l
-        rho_g = dat_Tmz_out['rho_g (kg/m^3)']
+        rho_g = props_Tmz_out_0['rho_g (kg/m^3)']
 
-        vol_l = dat_Tmz_out['vol_l (m^3/kg)']
-        vol_g = dat_Tmz_out['vol_g (m^3/kg)']    
+        vol_l = props_Tmz_out_0['vol_l (m^3/kg)']
+        vol_g = props_Tmz_out_0['vol_g (m^3/kg)']    
         vol_lg = vol_g - vol_l      
 
-        mu_l = dat_Tmz_out['mu_l (kg/m-s)']
-        mu_g = dat_Tmz_out['mu_g (kg/m-s)']
+        mu_l = props_Tmz_out_0['mu_l (kg/m-s)']
+        mu_g = props_Tmz_out_0['mu_g (kg/m-s)']
 
-        h_l = dat_Tmz_out['h_l (J/kg)']
-        h_g = dat_Tmz_out['h_g (J/kg)']
+        h_l = props_Tmz_out_0['h_l (J/kg)']
+        h_g = props_Tmz_out_0['h_g (J/kg)']
         h_lg = h_g - h_l
 
-        k_l = dat_Tmz_out['k_l (W/m-K)']
-        Pr = dat_Tmz_out['Pr_l (arb. unit)']
-
+        k_l = props_Tmz_out_0['k_l (W/m-K)']
+        Pr = props_Tmz_out_0['Pr_l (arb. unit)']
         # END:   COMPUTE ENERGY BALANCE IN COOLANT Tm(z) #####################
     
         # BEGIN: COMPUTE X WITH AND WITHOUT SCB ##############################
@@ -188,26 +184,26 @@ def solver(inp, infile_name):
         if inp.SCB_flag == False:
             # subcooled: both = 0
             if x_e <= 0:
-                    x_e = 0
-                    x = x_e
-                    SCB_out_flag = False
+                x_e = 0
+                x = x_e
+                SCB_out_flag = False
             # boiling: x = x_e(energy balance)
             else:
-                    x = x_e
-                    SCB_out_flag = False
+                x = x_e
+                SCB_out_flag = False
 
         # if SCB model is ON:
         else:
             if first_zD_flag == True:
-                    # model is on but T_co is still below T_sat
-                    x_e = x_e
-                    x = 0
+                # model is on but T_co is still below T_sat
+                x_e = x_e
+                x = 0
             else:
-                    #model is on, and in the last CV, T_co > T_sat    
-                    x_e = x_e
-                    # calculate x
-                    # use Module X Eqn. (75)
-                    x = x_e - x_e_zD*np.exp(x_e/x_e_zD - 1)           
+                #model is on, and in the last CV, T_co > T_sat    
+                x_e = x_e
+                # calculate x
+                # use Module X Eqn. (75)
+                x = x_e - x_e_zD*np.exp(x_e/x_e_zD - 1)           
 
         # alert user if boiling (this flag is sent to output file)
         if x > 0:
@@ -256,10 +252,10 @@ def solver(inp, infile_name):
         if T_co < T_sat:
             # if SCB hasn't happened at all, x_e = 0
             if first_zD_flag == True:
-                    x_e = 0
+                x_e = 0
             # if SCB has happened before, x_e = as usual
             else:
-                    x_e = x_e
+                x_e = x_e
         # if we currently have SCB
         else:
             # if this is the first CV it occurs in
