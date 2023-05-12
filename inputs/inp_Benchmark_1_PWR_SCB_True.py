@@ -5,7 +5,7 @@
 
 L = 3.7 # (m)
 L_e = 4 # (m)
-num_CV = 400 # number of control volumes along length. 
+num_CV = 40 # number of control volumes along length. 
 
 D = 9.4/1000 # (m), converted from (mm)
 D_ci = 8.5/1000 # (m), converted from (mm) 
