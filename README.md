@@ -92,7 +92,7 @@ The following limitations apply based on physical limitation of the systems the 
 
 
 ## Version History
-N/A
+- v1.0.0: initial release, 230512 BAT
 
 ## License
 GNU GPL v.3.0
