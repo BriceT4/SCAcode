@@ -151,23 +151,26 @@ def solver(inp, infile_name):
 
         #define properties from props_=_Tmz_out that we need.
         # rho_in = props_Tmz_in.loc[0, 'rho_l (kg/m^3)']
-        rho_l = props_Tmz_out.loc[0, 'rho_l (kg/m^3)']
-        rho_out = rho_l
-        rho_g = props_Tmz_out.loc[0, 'rho_g (kg/m^3)']
+        dat_Tmz_out = props_Tmz_out.loc[0]
 
-        vol_l = props_Tmz_out.loc[0, 'vol_l (m^3/kg)']
-        vol_g = props_Tmz_out.loc[0, 'vol_g (m^3/kg)']    
+        rho_l = dat_Tmz_out['rho_l (kg/m^3)']
+        rho_out = rho_l
+        rho_g = dat_Tmz_out['rho_g (kg/m^3)']
+
+        vol_l = dat_Tmz_out['vol_l (m^3/kg)']
+        vol_g = dat_Tmz_out['vol_g (m^3/kg)']    
         vol_lg = vol_g - vol_l      
 
-        mu_l =  props_Tmz_out.loc[0, 'mu_l (kg/m-s)']
-        mu_g =  props_Tmz_out.loc[0, 'mu_g (kg/m-s)']
+        mu_l = dat_Tmz_out['mu_l (kg/m-s)']
+        mu_g = dat_Tmz_out['mu_g (kg/m-s)']
 
-        h_l = props_Tmz_out.loc[0, 'h_l (J/kg)']
-        h_g = props_Tmz_out.loc[0, 'h_g (J/kg)']
+        h_l = dat_Tmz_out['h_l (J/kg)']
+        h_g = dat_Tmz_out['h_g (J/kg)']
         h_lg = h_g - h_l
 
-        k_l = props_Tmz_out.loc[0, 'k_l (W/m-K)']
-        Pr = props_Tmz_out.loc[0, 'Pr_l (arb. unit)']
+        k_l = dat_Tmz_out['k_l (W/m-K)']
+        Pr = dat_Tmz_out['Pr_l (arb. unit)']
+
         # END:   COMPUTE ENERGY BALANCE IN COOLANT Tm(z) #####################
     
         # BEGIN: COMPUTE X WITH AND WITHOUT SCB ##############################
@@ -351,24 +354,26 @@ def solver(inp, infile_name):
         # Use Bowring correlation with same \psi as Weisman correlation
         P_r = 0.145*(inp.P_nom/1E6) #P must be in MPa
         n = 2 - 0.5*P_r
+
         # calcualte F_#'s based on P_r
+        P_r_exp = np.exp((1-P_r))
         if x > 0:
             if P_r > 1:
-                F_1 = P_r**-0.368 * np.exp(0.648*(1-P_r))
-                F_2 = F_1 * (P_r**-0.448 * np.exp(0.245*(1-P_r)))**-1
+                F_1 = P_r**-0.368 * P_r_exp**0.648
                 F_3 = P_r**0.219
-                F_4 = F_3*P_r**1.649
+                F_4 = F_3 * P_r**1.649
+                F_2 = F_1 / (P_r**-0.448 * P_r_exp**0.245)
             elif P_r < 1:
-                F_1 = 1/1.917 * (P_r**18.942 * np.exp(20.89*(1-P_r)) + 0.917)
-                F_2 = 1.309*F_1 * (P_r**1.316 * np.exp(2.444*(1-P_r)) + 0.309)**-1
-                F_3 = 1/1.667 * (P_r**17.023 * np.exp(16.658*(1-P_r)) + 0.667)
-                F_4 = F_3*P_r**1.649
+                P_r_exp_2089 = P_r_exp**20.89
+                P_r_exp_2444 = P_r_exp**2.444
+                P_r_exp_16658 = P_r_exp**16.658
+                F_1 = (P_r**18.942 * P_r_exp_2089 + 0.917) / 1.917
+                F_3 = (P_r**17.023 * P_r_exp_16658 + 0.667) / 1.667
+                F_4 = F_3 * P_r**1.649
+                F_2 = 1.309 * F_1 / (P_r**1.316 * P_r_exp_2444 + 0.309)
             else:
-                F_1 = 1
-                F_2 = F_1
-                F_3 = F_2
-                F_4 = F_3
-            
+                F_1 = F_2 = F_3 = F_4 = 1
+
             A = (2.317*h_lg*D_e*G/4*F_1)/(1 + 0.0143*F_2*G*np.sqrt(D_e))
             B = G*D_e/4
             C = (0.077*F_3*D_e*G)/(1 + 0.347*F_4*(G/1356)**n)
