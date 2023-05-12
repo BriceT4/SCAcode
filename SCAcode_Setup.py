@@ -4,7 +4,6 @@
 # (C) Brice Turner, 2023
 
 import argparse
-import importlib
 import importlib.util
 import os
 
