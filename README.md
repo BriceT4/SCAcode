@@ -57,7 +57,7 @@ python SCAcode_Setup.py -i &lt;\entire\path\to\input\file&gt;.py
 ```
 
 ## Known Issues and Limitations
-The following limitations apply based on physical limitation of the systems the code is intended to model (e.g., the fuel can not have melted for this model to be valid) and the limitations of mathematical equations/models used:  
+The following limitations apply based on physical limitation of the systems the code is intended to model (e.g., the fuel can not have melted for this model to be valid and water must boil in a boiling water reactor) and the limitations of mathematical equations/models used:  
 
 | Type     | Limit     |
 | :---     | :---      |
@@ -68,12 +68,12 @@ The following limitations apply based on physical limitation of the systems the 
 | Physical | PWR-specific, amount of permitted boiling ($x_e < 0$) |
 | Physical | PWR-specific, power minimum ($q\prime \geq 0$) |
 | Model    | Decoupled momentum and energy equations ($\Delta P_{tot}/P_{abs} \leq 10 \%$) |
-| Model    | Cheng-Todreas, turbulent flow (Re $>$ 10$^4$) required |
-| Model    | Weisman, turbulent flow (Re $>$ 10$^4$) required |
+| Model    | Cheng-Todreas, turbulent flow (Re $> 10^4$) required |
+| Model    | Weisman, turbulent flow (Re $> 10^4$) required |
 | Model    | HEM, mass flux upper limit |
-| Model    | Schrock and Grossman, turbulent flow (Re $>$ 10$^4$) required |
+| Model    | Schrock and Grossman, turbulent flow (Re $> 10^4$) required |
 | Model    | Schrock and Grossman, $q\prime <$ CHF |
-| Model    | Bowring, turbulent flow (Re $>$ 10$^4$) required |
+| Model    | Bowring, turbulent flow (Re $> 10^4$) required |
 | Model    | Bowring, mass flux limit |
 
 
