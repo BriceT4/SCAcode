@@ -49,11 +49,11 @@ Results will be exported to SCAcode/outputs/ into a new folder for each run. Dat
 ### Useage
 #### If within current directory
 ```
-python SCAcode_Setup.py -i &lt;.\path\to\input\file&gt;.py  
+python SCAcode_Setup.py -i <.\path\to\input\file>.py  
 ```
 #### If not
 ```
-python SCAcode_Setup.py -i &lt;\entire\path\to\input\file&gt;.py  
+python SCAcode_Setup.py -i <\entire\path\to\input\file>.py  
 ```
 
 ## Known Issues and Limitations
@@ -69,11 +69,11 @@ The following limitations apply based on physical limitation of the systems the 
 | Physical | PWR-specific, power minimum ($q\prime \geq 0$) |
 | Model    | Decoupled momentum and energy equations ($\Delta P_{tot}/P_{abs} \leq 10 \%$) |
 | Model    | Cheng-Todreas, turbulent flow (Re $> 10^4$) required |
-| Model    | Weisman, turbulent flow (Re $> 10^4$) required |
+| Model    | Weisman, turbulent flow ($Re > 10^4$) required |
 | Model    | HEM, mass flux upper limit |
-| Model    | Schrock and Grossman, turbulent flow (Re $> 10^4$) required |
-| Model    | Schrock and Grossman, $q\prime <$ CHF |
-| Model    | Bowring, turbulent flow (Re $> 10^4$) required |
+| Model    | Schrock and Grossman, turbulent flow ($Re > 10^4$) required |
+| Model    | Schrock and Grossman, $q\prime < CHF$ |
+| Model    | Bowring, turbulent flow ($Re > 10^4$) required |
 | Model    | Bowring, mass flux limit |
 
 
