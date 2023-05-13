@@ -17,10 +17,9 @@ A steady-state, 1-D, nuclear reactor thermal hydraulics single channel analysis 
  ```
 
 ## Introduction
-- Purpose of the project
 SCAcode is intended to determine temperature, both radially throughout a fuel pin and of the moderator (water), and pressure loss within an ideal single channel within a nuclear reactor fuel assembly unit cell. It assumes steady state conditions and a nominal (cosine) flux shape throughout the core.  
   
-The fundamental principles of this work can largely be found in: Nuclear Systems I: Thermal Hydraulic Fundamentals, N.E. Todreas and M.S. Kazimi, 2011 (2nd edition). (ISBN: 9781439808870)  
+The fundamental principles of this work can be found in: Nuclear Systems I: Thermal Hydraulic Fundamentals, N.E. Todreas and M.S. Kazimi, 2011 (2nd edition). (ISBN: 9781439808870)  
   
 
 ## Getting Started
