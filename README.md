@@ -98,4 +98,7 @@ GNU GPL v.3.0
 
 ## Authors
 Brice Turner  
+  
+## Acknowledgments  
+This work would not have been possible without the teachings of DuWayne Scubring, PhD, of the University of Florida.
 
