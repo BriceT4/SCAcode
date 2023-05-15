@@ -94,7 +94,7 @@ The following limitations apply based on physical limitation of the systems the 
 - v1.0.0: initial release, 230512 BAT
 
 ## License
-GNU GPL v.3.0
+GNU GPL v3.0
 
 ## Authors
 Brice Turner  
