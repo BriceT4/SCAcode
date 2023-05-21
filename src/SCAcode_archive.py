@@ -3,58 +3,61 @@
 # Equation solver of SCAcode project
 # (C) Brice Turner, 2023
 
-import csv
 import numpy as np
 import os
+import pandas as pd
+import scipy.interpolate
 import time
-
-from scipy.interpolate import interp1d
 
 # BEGIN: SOLVER FUNCTION #####################################################
 def solver(inp, infile_name):
     time_start = time.time()
 
-    def read_data(file_path):
-        with open(file_path, 'r') as file:
-            csv_reader = csv.reader(file, delimiter='\t')
-            header = ['T (C)', 'P_sat (Pa)', 'vol_l (m^3/kg)', 'vol_g (m^3/kg)',
-                    'h_l (J/kg)', 'h_g (J/kg)', 'mu_l (kg/m-s)', 'k_l (W/m-K)',
-                    'Pr_l (arb. unit)', 'mu_g (kg/m-s)']
-            proptable = [dict(zip(header, map(float, row))) for row in csv_reader]
-        
-        return proptable
-    proptable = read_data('.\\data\\proptable.txt')
-
     # BEGIN: COMPUTE PROPERTY INTERPOLATIONS #################################
-    def interpPropTable(YourProp, YourValue, proptable):
-        lower_row = None
-        upper_row = None
-        for row in proptable:
-            if row[YourProp] == YourValue:
-                return row
-            elif row[YourProp] < YourValue:
-                lower_row = row
-            else:
-                upper_row = row
-                break
-        if lower_row is None or upper_row is None:
-            return None
-        interp_values = {prop: interp1d([lower_row[YourProp], upper_row[YourProp]],
-                                        [lower_row[prop], upper_row[prop]])(YourValue) for prop in proptable[0].keys()}
-        interp_values['rho_l (kg/m^3)'] = 1 / interp_values['vol_l (m^3/kg)']
-        interp_values['rho_g (kg/m^3)'] = 1 / interp_values['vol_g (m^3/kg)']
-        
-        return interp_values
-        # END:   COMPUTE PROPERTY INTERPOLATIONS #################################
+    proptable = pd.read_csv('.\\data\\proptable.txt', sep = '\t', header = None)
+    proptable_header = ['T (C)', 'P_sat (Pa)', 'vol_l (m^3/kg)', 'vol_g (m^3/kg)',
+                        'h_l (J/kg)', 'h_g (J/kg)', 'mu_l (kg/m-s)', 'k_l (W/m-K)',
+                        'Pr_l (arb. unit)', 'mu_g (kg/m-s)']
+    proptable.columns = proptable_header
+
+    # fluid property interpolation function
+    def interpPropTable(YourProp, YourValue):
+        mask = proptable[YourProp] == YourValue
+        # if you're already on a value in the proptable
+        if mask.any():
+            InterpValues = proptable[mask]
+        # otherwise, we need to interpolate
+        else:
+            # Create a mask for rows where proptable's YourProp < YourValue
+            mask = proptable[YourProp] < YourValue
+
+            # Get surrounding values
+            lower_row = proptable[mask].iloc[-1]
+            upper_row = proptable[~mask].iloc[0]
+
+            # Interpolate 
+            interp_fns = {prop: scipy.interpolate.interp1d([lower_row[YourProp],upper_row[YourProp]],
+                                                           [lower_row[prop], upper_row[prop]]) for prop in proptable.columns}
+            InterpValues = pd.DataFrame({prop: fn(YourValue) for prop, fn in interp_fns.items()}, index=[0])
+        # Calculate densities
+        rhos = pd.DataFrame({'rho_l (kg/m^3)': 1/InterpValues['vol_l (m^3/kg)'],
+                            'rho_g (kg/m^3)': 1/InterpValues['vol_g (m^3/kg)']})
+        InterpValues = pd.concat([InterpValues, rhos], axis=1).dropna()
+
+        return InterpValues
+    # END:   COMPUTE PROPERTY INTERPOLATIONS #################################
+
+
 
     # BEGIN: VARIOUS CALCULATIONS AND VARIABLE INITIALIZATIONS ###############
-    # define saturation properties needed later,
+    #define saturation properties needed later
     # based on a constant pressure from input file
+    props_sat = interpPropTable('P_sat (Pa)', inp.P_nom)
+    T_sat = props_sat.loc[0, 'T (C)']
+    h_l_sat = props_sat.loc[0, 'h_l (J/kg)']
+    h_g_sat = props_sat.loc[0, 'h_g (J/kg)']
+
     data = []
-    props_sat = interpPropTable('P_sat (Pa)', inp.P_nom, proptable) 
-    T_sat = props_sat['T (C)']
-    h_l_sat = props_sat['h_l (J/kg)']
-    h_g_sat = props_sat['h_g (J/kg)']
 
     # create discretized length vector
     Delta_z = inp.L/inp.num_CV
@@ -82,7 +85,7 @@ def solver(inp, infile_name):
     # converted to a number and not cause issues in the first CV
     h_iplus1 = False 
     # END:   VARIOUS CALCULATIONS AND VARIABLE INITIALIZATIONS ###############
-
+    
 
 
     # BEGIN: DEFINE q' CALCULATION FUNCTIONS #################################
@@ -99,7 +102,7 @@ def solver(inp, infile_name):
 
 
 
-    # BEGIN: OUTER LOOP OF Z VECTOR ##########################################S
+    # BEGIN: CREATE OUTER LOOP OF Z VECTOR ###################################
     for z in z_vector:
         print(f'%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% z =  {z}\n')
 
@@ -115,36 +118,37 @@ def solver(inp, infile_name):
         # interpolate all proptable values based on your temp
         if T_m > T_sat:
             T_m = T_sat
-        props_Tmz_in = interpPropTable('T (C)', T_m, proptable)
-
+        props_Tmz_in = interpPropTable('T (C)', T_m)
+        
         # calculate h_iplus1, for the first time (this will only happen once)
         if h_iplus1 == False:
-            h_i_in = props_Tmz_in['h_l (J/kg)']
+            h_i_in = (props_Tmz_in.loc[:, 'h_l (J/kg)']).values[0]
             # using .values[0] keeps the index of the value out of our new variable.
         # if h_iplus1 has an actual value (isn't that ~nonsense~ False from earlier)
         # your old h_iplus1 is now your new h_i...
         elif not h_iplus1 == False:
             h_i_in = h_iplus1
-
+        
         #calculate new h_i+1 based on last CV's h_i and q'_{1+1/2} equation
         h_iplus1 = h_i_in + qp_iPlusHalf(z)*Delta_z/inp.m_dot
 
         # now interpolate new proptable based on new enthalpy (h_iplus1)
-        props_Tmz_out = interpPropTable('h_l (J/kg)', h_iplus1, proptable)
+        props_Tmz_out = interpPropTable('h_l (J/kg)', h_iplus1)
 
         # take T_m from this new proptable and define it as it's own variable.
         # this is needed to:
         #     (1) export to the final dataframe, 
         #     (2) repeat this calculation up the rest of the channel, and 
         #     (3) compute all other temps.
-        T_m = props_Tmz_out['T (C)']
+        T_m = props_Tmz_out.loc[0, 'T (C)']
         # UNLESS YOU'RE ABOVE T_sat, THEN USE T_sat PROPERTIES REGARDLESS!!!!!
         if T_m > T_sat:
             T_m = T_sat
-        props_Tmz_out = interpPropTable('T (C)', T_m, proptable)
-        
+        props_Tmz_out = interpPropTable('T (C)', T_m)
+
         #define properties from props_=_Tmz_out that we need.
-        props_Tmz_out_0 = props_Tmz_out.copy()
+        # rho_in = props_Tmz_in.loc[0, 'rho_l (kg/m^3)']
+        props_Tmz_out_0 = props_Tmz_out.loc[0]
 
         rho_l = props_Tmz_out_0['rho_l (kg/m^3)']
         rho_out = rho_l
@@ -164,9 +168,7 @@ def solver(inp, infile_name):
         k_l = props_Tmz_out_0['k_l (W/m-K)']
         Pr = props_Tmz_out_0['Pr_l (arb. unit)']
         # END:   COMPUTE ENERGY BALANCE IN COOLANT Tm(z) #####################
-
-
-
+    
         # BEGIN: COMPUTE X WITH AND WITHOUT SCB ##############################
         # create boiling flags
         Boiling_out_flag = False
@@ -211,7 +213,7 @@ def solver(inp, infile_name):
             SCB_out_flag = True 
         # END:   COMPUTE X WITH AND WITHOUT SCB ##############################
 
-        
+
 
         # BEGIN: COMPUTE ONE-PHASE CONVECTIVE HEAT TRANSFER Tco(z) ###########
         #calculate htc using Weisman model:
@@ -224,6 +226,8 @@ def solver(inp, infile_name):
         Nu = Nu_ct * psi # Nusselt number (arb. unit)
         # calculate Weisman heat transfer coefficient. (W/m^2-K)
         htc_lo = Nu*k_l/D_e
+
+        
 
         # BEGIN: COMPUTE TWO-PHASE HEAT TRANSFER T_co(z) #####################
         #calculate q''
@@ -281,8 +285,8 @@ def solver(inp, infile_name):
         # np.log is ln(), np.log10 is log_base10()
         T_ci = T_co + qp_iPlus1(z)/(2*np.pi*inp.k_cl) * np.log(R_co/R_ci)
         # END:   COMPUTE GAP CONDUCTANCE Tci(z) ##############################
-
-
+        
+        
 
         # BEGIN: COMPUTE GAP CONDUCTANCE T_fo(z) #############################
         # initial heat transfer coefficient guess
@@ -315,8 +319,8 @@ def solver(inp, infile_name):
                 T_fo_old = T_fo_new
         # END:   COMPUTE GAP CONDUCTANCE T_fo(z) #############################
 
-
-
+        
+        
         # BEGIN: COMPTUE GAP CONDUCTANCE T_max(z) ############################
         k_bar_guess = 3 # (W m^-1 K^-1)
         #calculate T_max
@@ -433,23 +437,33 @@ def solver(inp, infile_name):
                     DeltaP_total,
                     Re
                     ])
-    # END:   OUTER LOOP OF Z VECTOR ##########################################
+    # END:   STEP 3. CREATE OUTER LOOP OF Z VECTOR ###########################
 
 
 
     # BEGIN: ORGANIZE AND EXPORT DATA ########################################
-    # Convert data to a list of dictionaries for easier use
-    data_dicts = []
-    column_names = ['z', 'T_m (C)', 'T_co (C)', 'T_ci (C)', 'T_fo (C)', 'T_max (C)', 'x', 'x_e', 'Boiling_out_flag', 'SCB_out_flag', 'CHFR', 'CHFR_crit_flag', 'DeltaP_thisCell (Pa)', 'Re']
-    for row in data:
-        data_dicts.append(dict(zip(column_names, row)))
+    # we're now back outside the main for z...: loop.
+    # convert data variable to dataframe for easier use
+    data = pd.DataFrame(data)
 
-    # Calculate the sum of DeltaP_thisCell (Pa)
-    DeltaP_sum = sum(d['DeltaP_thisCell (Pa)'] for d in data_dicts)
+    data.columns = ['z',
+                    'T_m (C)',
+                    'T_co (C)',
+                    'T_ci (C)',
+                    'T_fo (C)',
+                    'T_max (C)',
+                    'x',
+                    'x_e',
+                    'Boiling_out_flag',
+                    'SCB_out_flag',
+                    'CHFR',
+                    'CHFR_crit_flag',
+                    'DeltaP_thisCell (Pa)',
+                    'Re'
+                    ]
 
-    # Add the DeltaP_sum (Pa) to each dictionary in the list
-    for d in data_dicts:
-        d['DeltaP_sum (Pa)'] = DeltaP_sum
+    DeltaP_sum = data['DeltaP_thisCell (Pa)'].sum()
+    data['DeltaP_sum (Pa)'] = DeltaP_sum
 
     timestr = time.strftime('%Y%m%d_%H%M%S')
     dir_output = f'.\\outputs\\SCAcode_output_{infile_name}_{timestr}\\'
@@ -457,22 +471,17 @@ def solver(inp, infile_name):
     if not os.path.exists(dir_output):
         os.makedirs(dir_output)
     fp_data = os.path.join(dir_output, filename)
-
-    # Write data to a CSV file
-    with open(fp_data, 'w', newline='') as f:
-        writer = csv.DictWriter(f, fieldnames=list(data_dicts[0].keys())) # use the keys of the first dictionary as fieldnames
-        writer.writeheader()
-        for d in data_dicts:
-            writer.writerow(d)
+    data.to_csv(fp_data, index = False)
 
     time_end = time.time()
     time_elapsed = time_end - time_start
 
     print(f"""
-{os.path.basename(__file__)} successfully ran.
+{os.path.basename(__file__)} sucessfully ran.
 Elapsed run time: {time_elapsed:.2f} s.
 Results were exported to {fp_data}.
     """)
     return fp_data, dir_output
     # END:   ORGANIZE AND EXPORT DATA ########################################
 # END:   SOLVER FUNCTION #####################################################
+

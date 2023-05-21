@@ -10,7 +10,7 @@
             "request": "launch",
             "program": "${workspaceFolder}/SCAcode_Setup.py",
             "console": "integratedTerminal",
-            "args": ["-i", "inputs.inp_Benchmark_1_PWR_SCB_True.py"], 
+            "args": ["-i", ".\\inputs\\inp_Benchmark_1_PWR_SCB_True.py"], 
             "justMyCode": true
         }
     ]
