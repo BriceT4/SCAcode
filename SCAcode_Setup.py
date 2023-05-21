@@ -63,10 +63,10 @@ def solveIt(input_file, infile_name):
 
 
 # BEGIN: PLOT ################################################################
-# def plotIt(fp_data, infile_name, dir_output):
-#     from src.genPlots import plotter
-#     plotter(fp_data, infile_name, dir_output)
-#     return
+def plotIt(fp_data, infile_name, dir_output):
+    from src.genPlots import plotter
+    plotter(fp_data, infile_name, dir_output)
+    return
 # END:   PLOT ################################################################
 
 
@@ -85,6 +85,6 @@ def PrintSuccess():
 # BEGIN: EXECUTE #############################################################
 input_file, infile_name = SetupCommandLine()
 fp_data, dir_output = solveIt(input_file, infile_name)
-# plotIt(fp_data, infile_name, dir_output)
+plotIt(fp_data, infile_name, dir_output)
 PrintSuccess()
 # END:   EXECUTE #############################################################
