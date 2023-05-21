@@ -20,8 +20,8 @@ def solver(inp, infile_name):
             header = ['T (C)', 'P_sat (Pa)', 'vol_l (m^3/kg)', 'vol_g (m^3/kg)',
                     'h_l (J/kg)', 'h_g (J/kg)', 'mu_l (kg/m-s)', 'k_l (W/m-K)',
                     'Pr_l (arb. unit)', 'mu_g (kg/m-s)']
-            proptable = [dict(zip(header, map(float, row))) for row in csv_reader]
-        
+            proptable = [dict(zip(header, map(float, row))) for row in csv_reader]  
+
         return proptable
     proptable = read_data('.\\data\\proptable.txt')
 
@@ -38,12 +38,13 @@ def solver(inp, infile_name):
                 upper_row = row
                 break
         if lower_row is None or upper_row is None:
+
             return None
         interp_values = {prop: interp1d([lower_row[YourProp], upper_row[YourProp]],
                                         [lower_row[prop], upper_row[prop]])(YourValue) for prop in proptable[0].keys()}
         interp_values['rho_l (kg/m^3)'] = 1 / interp_values['vol_l (m^3/kg)']
         interp_values['rho_g (kg/m^3)'] = 1 / interp_values['vol_g (m^3/kg)']
-        
+
         return interp_values
         # END:   COMPUTE PROPERTY INTERPOLATIONS #################################
 
@@ -89,11 +90,13 @@ def solver(inp, infile_name):
     # define function to calculate q'(z)_{i+1/2} as a function of z.
     def qp_iPlusHalf(YourZ):
         qp_iplushalf = inp.qp_max*np.cos(np.pi*(YourZ - 0.5*Delta_z)/inp.L_e)
+
         return(qp_iplushalf)
 
     # define function to calculate q\prime(z)_{i+1} as a function of z
     def qp_iPlus1(YourZ):
         qp_iplus1 = inp.qp_max*np.cos(np.pi*(YourZ)/inp.L_e)
+
         return(qp_iplus1)
     # END:   DEFINE q' CALCULATION FUNCTIONS #################################
 
@@ -200,7 +203,6 @@ def solver(inp, infile_name):
                 #model is on, and in the last CV, T_co > T_sat    
                 x_e = x_e
                 # calculate x
-                # use Module X Eqn. (75)
                 x = x_e - x_e_zD*np.exp(x_e/x_e_zD - 1)           
 
         # alert user if boiling (this flag is sent to output file)
@@ -391,7 +393,6 @@ def solver(inp, infile_name):
         # FOR ONE PHASE: NEGLECT ACCELERATION.
         # if there's no boiling, use one-phase model
         if x <= 0:
-            # calculate f using Module 1, Eqn.(19).
             f_interior = Re**(-0.18) * (0.1339 + 0.09059*(inp.Pitch/inp.D - 1) - 0.09926*(inp.Pitch/inp.D - 1)**2)
             # rho*v^2/2 = G^2/(2*rho); inplement below.
             dP_dz_fric = f_interior/D_e*G**2/(2*rho_l)
