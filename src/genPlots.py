@@ -87,6 +87,6 @@ Elapsed run time: {time_elapsed:.2f} s.
 Results were exported to {fp_data}.
     """)
 
-    # plt.show()
+    plt.show()
     return
 
