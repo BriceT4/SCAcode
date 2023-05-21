@@ -1,7 +1,7 @@
 #!/usr/bin/python
 # SCAcode.py
 # Equation solver of SCAcode project
-# (C) Brice Turner, 2023
+# (C) 2023, Brice Turner and Parker McLeod
 
 import csv
 import numpy as np

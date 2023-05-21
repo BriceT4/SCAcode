@@ -1,7 +1,7 @@
 #!/usr/bin/python
 # <input>.py
 # An input file for SCAcode project
-# (C) Brice Turner, 2023
+# (C) 2023, Brice Turner and Parker McLeod
 
 L = 3.0 # (m)
 L_e = 3.45 # (m)
