@@ -68,7 +68,8 @@ The following limitations apply based on physical limitation of the systems the 
 
 
 ## Version History
-- v1.0.0: initial release, 230512 BAT
+- v1.1.0: Conversion from pd to np for speed. BAT, 230520
+- v1.0.0: initial release. BAT, 230512
 
 ## License
 GNU GPL v3.0
