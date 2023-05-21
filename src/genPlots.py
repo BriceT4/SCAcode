@@ -1,7 +1,7 @@
 #!/usr/bin/python
 # genPlots.py
 # Plotter of of SCAcode project
-# (C) Brice Turner, 2023
+# (C) 2023, Brice Turner and Parker McLeod
 
 import matplotlib.pyplot as plt
 import os
