@@ -5,20 +5,20 @@
 
 L = 3.0 # (m)
 L_e = 3.45 # (m)
-num_CV = 400 # number of control volumes along length. 
+num_CV = 500 # number of control volumes along length. 
 
 D = 10/1000 # (m), converted from (mm)
 D_ci = 9.1/1000 # (m), converted from (mm) 
 D_fo = 8.9/1000 # (m), converted from (mm) 
 Pitch = 12.9/1000 # (m), converted from (mm)
 
-T_m_in = 260 # (Celcius)
-P_nom = 6900000 # (Pa)
+T_m_in = 270 # (Celcius)
+P_nom = 6700000 # (Pa)
 qp_max = 30*1000 # (W/m) converted from (kW/m) 
 m_dot = 0.17 # (kg/s)
 k_cl = 16 # cladding conductivity (W/m-K)
 
-g = 9.81 # gravitational acceleration on Earth Z(m/s^2)
+g = 9.81 # gravitational acceleration on Earth (m/s^2)
 SB_constant = 5.67E-8 # Stefan-Boltzmann constant (W m^-2 K^-4)
 
 Reactor_Type = 'BWR'
